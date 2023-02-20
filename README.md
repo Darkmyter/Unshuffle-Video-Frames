@@ -75,7 +75,7 @@ Bellow is a simplified pseudo algorithm:
    - IoU: frames that have no IoU higher than 0.8 are eliminated. 
    - Cosine similarity: frames that have shares a similarity higher than 0.8 with less than 10% of the frames are eliminated.
 5. Run the main iteration loop until all the frames are sorted or maximum number of iter reached.   
-   Init: $L=[f^*]$ unshuffled frames, $f^*=0$ the first frame to sort, $Q=False$ whether to add sorted batch to beginning of the $L$ or not, 
+   Init: $L=[f^* ]$ unshuffled frames, $f^* =0$ the first frame to sort, $Q=False$ whether to add sorted batch to beginning of the $L$ or not, 
    1. $C =$ sorted frames by IoUs or similarity in relation to $f^*$
    2. $C =$ filtered $C$ by an IoU and similarity thresholds
    3. $C =$ select a number of $window$ frames that are not in $L$, from $C$.
