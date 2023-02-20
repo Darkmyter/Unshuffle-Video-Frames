@@ -5,11 +5,14 @@
 
 Recreate the original of a corrupt video (the frames have been shuffled)
 
-| <img width="75%" src="resources/corrupted.gif"> | <img width="75%" src="resources/unshuffled.gif"> |
+| Corrupt video | Unshuffled video |
 |:--:|:--:|
+| <img width="75%" src="resources/corrupted.gif"> | <img width="75%" src="resources/unshuffled.gif"> |
 | <img width="75%" src="resources/theoffice-corrupted.gif"> | <img width="75%" src="resources/theoffice-unshuffled.gif"> |
 | <img width="75%" src="resources/theoffice2-corrupted.gif"> | <img width="75%" src="resources/theoffice2-unshuffled.gif"> |
-| Corrupt video | Unshuffled video |
+| <img width="75%" src="resources/corrupted-mall.gif"> | <img width="75%" src="resources/mall-unshuffled.gif"> |
+
+
 
 </div>
 
@@ -44,9 +47,9 @@ Options:
 ```
 
 
-Tips:
+<!-- Tips:
 * Sorting by iou is more efficient is the camera moves slowly and and the path of the objects in the video is linear. 
-* Sorting by similarity is beneficial when the camera angle change is important.
+* Sorting by similarity is beneficial when the camera angle change is important. -->
 
 
 ## Reproduce the examples above:
@@ -58,3 +61,5 @@ The videos shown in the example can be found [here](https://drive.google.com/dri
   * `python unsuffle-video.py --path corrupted-theoffice.mp4 --sort_by similarity`
 * example 3:
   * `python unsuffle-video.py --path corrupted-theoffice2.mp4`
+* example 4:
+  * `python unsuffle-video.py --path corrupted-mall.mp4 --window 7 --similarity-subject object`
