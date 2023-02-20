@@ -46,7 +46,6 @@ Options:
   --help                                        Show this message and exit.
 ```
 
-
 <!-- Tips:
 * Sorting by iou is more efficient is the camera moves slowly and and the path of the objects in the video is linear. 
 * Sorting by similarity is beneficial when the camera angle change is important. -->
@@ -63,3 +62,6 @@ The videos shown in the example can be found [here](https://drive.google.com/dri
   * `python unsuffle-video.py --path corrupted-theoffice2.mp4`
 * example 4:
   * `python unsuffle-video.py --path corrupted-mall.mp4 --window 7 --similarity-subject object`
+
+To shuffle your own videos, use the following command:  
+`python shuffle-video.py --path <video-path> --output-path <corrupted-video-output-path>`
