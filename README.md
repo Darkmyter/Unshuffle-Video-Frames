@@ -42,6 +42,7 @@ Options:
   --similarity-subject [frame|object]           Similarity measure subject: all the frame or the objects                  
   --window INTEGER                              number of frame to sort at each iteration.
   --sort-by [iou|similarity]                    Metric used for selecting candidate frames at each iteration.
+  --filter-by [iou|similarity]                  Metric used for filtering intruder images.
                                   
   --help                                        Show this message and exit.
 ```

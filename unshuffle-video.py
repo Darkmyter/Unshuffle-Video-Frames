@@ -1,3 +1,7 @@
+"""
+Unshuffle corrupted video to recreate the original frame order.
+"""
+
 from ultralytics import YOLO
 import numpy as np
 import numpy as np
@@ -16,9 +20,11 @@ warnings.filterwarnings("ignore")
 @click.option('--similarity-subject', default="frame", type=click.Choice(['frame', 'object'], case_sensitive=True),  help='Similarity measure subject: all the frame or the objects')
 @click.option('--window', default=3, help='number of frame to sort at each iteration.', type=int)
 @click.option('--sort-by', default="iou", type=click.Choice(['iou', 'similarity'], case_sensitive=True),  help='Metric used for selecting candidate frames at each iteration.')
-def main(path, output_path, yolo, similarity_subject, window, sort_by):
+@click.option('--filter-by', default="iou", type=click.Choice(['iou', 'similarity'], case_sensitive=True),  help='Metric used for filtering intruder images.')
 
-    # load video frames
+def main(path, output_path, yolo, similarity_subject, window, sort_by, filter_by):
+
+    ##################### load video frames #####################
     frames = read_video(path)
 
     if len(frames) == 0:
@@ -32,7 +38,7 @@ def main(path, output_path, yolo, similarity_subject, window, sort_by):
     model = YOLO(yolo)
     predictions = model(frames, verbose=False)
 
-    # filter prediciton by class: 0 -> human
+    # filter predictions by class: 0 -> human
     filtered_predictions = []
     for pred in predictions:
         bboxes = []
@@ -48,8 +54,7 @@ def main(path, output_path, yolo, similarity_subject, window, sort_by):
     else:
         embeddings = get_embedding(frames, filtered_predictions)
 
-    #### Compute IOU, object paring and embedding matrixes ######
-
+    #### Compute IOU, object paring and cosine similarity matrixes ######
     click.echo(f"Creating matrixes...")
     iou_thr_pairing = 0.4
 
@@ -101,13 +106,16 @@ def main(path, output_path, yolo, similarity_subject, window, sort_by):
     cosine_matrix = np.array(cosine_matrix)
 
 
-    ############# filter intruder images by iou ####################
-
+    ############# filter intruder images by iou or similarity ####################
     click.echo(f"Filtering frames...")
     filtered_frames_ids = []
     for f_id in range(len(frames)):
-        if not np.where(iou_matrix[f_id]> 0.8)[0].size == 0:
-            filtered_frames_ids.append(f_id)
+        if filter_by == "iou":
+            if np.where(iou_matrix[f_id]> 0.8)[0].size > 1:
+                filtered_frames_ids.append(f_id)
+        else:
+            if np.where(cosine_matrix[f_id]> 0.8)[0].size > len(frames) // 10:
+                filtered_frames_ids.append(f_id) 
 
     # filter lists and matrixes
     filtered_frames = [frames[f] for f in filtered_frames_ids]
@@ -121,7 +129,6 @@ def main(path, output_path, yolo, similarity_subject, window, sort_by):
 
     ######################### Main Algorithm ##########################
 
-    # number of frame to sort at each iteration
     iou_thr = 0.4
     sim_thr = 0.85
 
@@ -168,7 +175,6 @@ def main(path, output_path, yolo, similarity_subject, window, sort_by):
                 else:
                     centers[-1].append(None)
             f_star_x.append(box_center(filtered_predictions[f_star][obj])[0])
-
 
         candidates = sort_candidates(candidates, f_star_x, centers)
         
