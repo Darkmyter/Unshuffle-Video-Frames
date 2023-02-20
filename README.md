@@ -5,7 +5,7 @@
 
 Recreate the original of a corrupt video (the frames have been shuffled)
 
-| Corrupt video | Unshuffled video |
+| Corrupted video | Unshuffled video |
 |:--:|:--:|
 | <img width="75%" src="resources/corrupted.gif"> | <img width="75%" src="resources/unshuffled.gif"> |
 | <img width="75%" src="resources/theoffice-corrupted.gif"> | <img width="75%" src="resources/theoffice-unshuffled.gif"> |
