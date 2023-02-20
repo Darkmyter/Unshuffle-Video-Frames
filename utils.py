@@ -8,6 +8,7 @@ import cv2
 
 
 def read_video(video_path):
+    """Read video from path"""
     video = cv2.VideoCapture(str(video_path))
 
     frames = []
@@ -75,6 +76,7 @@ def bbox_distance(bbox1, bbox2):
 
 
 def get_embedding(frames, predictions=None):
+    """Create embedding of frames or objects using resnet50. The embedding size is 2048."""
     model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True)
     layer = model._modules.get('avgpool')
 
@@ -119,7 +121,7 @@ def get_embedding(frames, predictions=None):
     return embeddings
 
 def cosine_similarity(emb1, emb2):
-
+    """Compute cosine similarity between two embeddings"""
     cos_sim = np.dot(emb1, emb2)/(np.linalg.norm(emb1)*np.linalg.norm(emb2))
 
     return cos_sim
