@@ -12,15 +12,19 @@ warnings.filterwarnings("ignore")
 @click.command()
 @click.option('--path', help='Path to the video.')
 @click.option('--output-path', default=None, help='Path to the output video.')
-@click.option('--yolo', default="yolov8s", type=click.Choice(['yolov8s', 'yolov8m', 'yolov8l', 'yolov8x'], case_sensitive=True),  help='yolo network')
-@click.option('--emb-subject', default="frame", type=click.Choice(['frame', 'object'], case_sensitive=True),  help='Embedding subject')
-@click.option('--window', default=3, help='window size.', type=int)
-@click.option('--sort-by', default="iou", type=click.Choice(['iou', 'similarity'], case_sensitive=True),  help='Metric used for selecting candidate frames.')
-def main(path, output_path, yolo, emb_subject, window, sort_by):
+@click.option('--yolo', default="yolov8s", type=click.Choice(['yolov8s', 'yolov8m', 'yolov8l', 'yolov8x'], case_sensitive=True),  help='yolo network size.')
+@click.option('--similarity-subject', default="frame", type=click.Choice(['frame', 'object'], case_sensitive=True),  help='Similarity measure subject: all the frame or the objects')
+@click.option('--window', default=3, help='number of frame to sort at each iteration.', type=int)
+@click.option('--sort-by', default="iou", type=click.Choice(['iou', 'similarity'], case_sensitive=True),  help='Metric used for selecting candidate frames at each iteration.')
+def main(path, output_path, yolo, similarity_subject, window, sort_by):
 
     # load video frames
     frames = read_video(path)
 
+    if len(frames) == 0:
+        click.echo(f"Loaded video. {len(frames)} frames found. Existing...")
+        return None
+    
     click.echo(f"Loaded video. {len(frames)} frames found.")
 
     ####################### detect objects ######################
@@ -38,8 +42,8 @@ def main(path, output_path, yolo, emb_subject, window, sort_by):
         filtered_predictions.append(bboxes)
 
     ####### compute embedding of each frame / object ############
-    click.echo(f"Computing embeddings for {emb_subject} ...")
-    if emb_subject == "frame":
+    click.echo(f"Computing embeddings for {similarity_subject} ...")
+    if similarity_subject == "frame":
         embeddings = get_embedding(frames)
     else:
         embeddings = get_embedding(frames, filtered_predictions)
@@ -65,7 +69,7 @@ def main(path, output_path, yolo, emb_subject, window, sort_by):
             # compute iou between bboxes from each frame
             iou_sub_matrix = np.array([[iou(bbox_0, bbox_1) for bbox_1 in f1_bboxes] for bbox_0 in f0_bboxes])
 
-            if emb_subject == "frame":
+            if similarity_subject == "frame":
                 # compute cosine similarity between frames
                 cosine_matrix[-1].append(cosine_similarity(embeddings[j], embeddings[i]))
             else:
@@ -83,14 +87,14 @@ def main(path, output_path, yolo, emb_subject, window, sort_by):
                 boxes_max = iou_sub_matrix.max(axis=1)
                 object_pairs[-1].append([boxes_argmax[z] if boxes_max[z] > iou_thr_pairing else None for z in range(len(f0_bboxes))])
 
-                if emb_subject == "object":
+                if similarity_subject == "object":
                     # set mean of max cosine of objects as cosine similarity between frames.
                     max_cosine_obj = np.array(cosine_sub_matrix).max(axis=1)
                     cosine_matrix[-1].append(max_cosine_obj.mean())
             else:
                 iou_matrix[-1].append(0)
                 object_pairs[-1].append([])
-                if emb_subject == "object":
+                if similarity_subject == "object":
                     cosine_matrix[-1].append(0)
 
     iou_matrix = np.array(iou_matrix)
@@ -139,8 +143,7 @@ def main(path, output_path, yolo, emb_subject, window, sort_by):
         # the filtering insures only close frames are selected.
         if sort_by == "iou":
             candidates = np.argsort(-filtered_iou_matrix[f_star])
-        else:
-            sort_by == "similarity":
+        elif sort_by == "similarity":
             candidates = np.argsort(-filtered_cosine_matrix[f_star])
 
         candidates = candidates[np.where(filtered_iou_matrix[f_star, candidates] > iou_thr)[0]]
